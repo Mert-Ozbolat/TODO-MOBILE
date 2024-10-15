@@ -11,10 +11,14 @@ import {
 import React, { useEffect, useState } from 'react';
 import uuid from 'react-native-uuid';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LinearGradient from 'react-native-linear-gradient';
+import { AddCircle, CloseCircle, TickCircle, Trash, Edit2 } from 'iconsax-react-native';
+
 
 const TodoScreen = () => {
     const [todo, setTodo] = useState('');
     const [todos, setTodos] = useState([]);
+
     const saveTodos = async saveTodo => {
         try {
             await AsyncStorage.setItem('todos', JSON.stringify(saveTodo));
@@ -57,6 +61,15 @@ const TodoScreen = () => {
         );
     };
 
+    const completeTodo = async (id) => {
+        const updateTodos = todos.map(item =>
+            item.id === id ? { ...item, completed: !item.completed } : item,
+
+        );
+        setTodos(updateTodos);
+        saveTodos(updateTodos);
+    }
+
     useEffect(() => {
         loadTodos();
     }, []);
@@ -68,9 +81,9 @@ const TodoScreen = () => {
     };
 
     return (
-        <View style={styles.container}>
+        <LinearGradient colors={['#7C93C3', '#1E2A5E']} style={styles.container}>
             <SafeAreaView>
-                <Text style={styles.headerText}>React Native Async Storage</Text>
+                <Text style={styles.headerText}>TO DO LIST</Text>
                 <View style={styles.inputContainer}>
                     <TextInput
                         onChangeText={text => setTodo(text)}
@@ -80,7 +93,7 @@ const TodoScreen = () => {
                     <TouchableOpacity
                         onPress={addTodo}
                         style={[styles.button, styles.addButton]}>
-                        <Text style={styles.buttonText}>Add</Text>
+                        <AddCircle size="32" color='white' variant='Broken' />
                     </TouchableOpacity>
                 </View>
 
@@ -89,29 +102,54 @@ const TodoScreen = () => {
                     keyExtractor={item => item?.id?.toString()}
                     renderItem={({ item }) => (
                         <View style={styles.todoItem}>
-                            <Text style={{ color: '#00000' }}>{item?.text}</Text>
+                            <Text
+                                style={[styles.todoText,
+                                item.completed && styles.completedText
+                                ]}>{item?.text}</Text>
+
                             <View style={{ flexDirection: 'row' }}>
+
                                 <View style={styles.buttonContainer}>
                                     <TouchableOpacity
-                                        onPress={() => deleteTodo(item?.id)}
-                                        style={[styles.button, styles.deleteButton]}>
-                                        <Text style={styles.buttonText}>Delete</Text>
+                                        onPress={() => completeTodo(item?.id)}
+                                        style={[styles.button, styles.completeButton]}>
+                                        {
+                                            item.completed ? (
+                                                <CloseCircle size={27} color='white' variant='Broken' />
+                                            ) : (
+                                                <TickCircle size={27} color='white' variant='Broken' />
+                                            )
+                                        }
                                     </TouchableOpacity>
                                 </View>
 
                                 <View style={styles.buttonContainer}>
                                     <TouchableOpacity
-                                        onPress={() => updateTodos(item?.id)}
-                                        style={[styles.button, styles.updateButton]}>
-                                        <Text style={styles.buttonText}>Update</Text>
+                                        onPress={() => deleteTodo(item?.id)}
+                                        style={[styles.button, styles.deleteButton]}>
+                                        <Text style={styles.buttonText}>
+                                            <Trash size={27} color='white' variant='Broken' />
+                                        </Text>
                                     </TouchableOpacity>
                                 </View>
+
+
+                                <View style={styles.buttonContainer}>
+                                    <TouchableOpacity
+                                        onPress={() => updateTodos(item?.id)}
+                                        style={[styles.button, styles.updateButton]}>
+                                        <Text style={styles.buttonText}>
+                                            <Edit2 size={27} color='white' variant='Broken' />
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+
                             </View>
                         </View>
                     )}
                 />
             </SafeAreaView>
-        </View>
+        </LinearGradient>
     );
 };
 
@@ -136,7 +174,7 @@ const styles = StyleSheet.create({
         padding: 10,
         flex: 1,
         borderRadius: 10,
-        borderColor: 'gray',
+        borderColor: 'black',
     },
     button: {
         marginLeft: 10,
@@ -146,10 +184,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         padding: 8,
-        backgroundColor: 'blue',
+        backgroundColor: '#0B666A',
+        width: 60
     },
     buttonText: {
         color: 'white',
+        fontSize: 15
     },
     buttonContainer: {},
     todoItem: {
@@ -157,12 +197,29 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginTop: 15,
     },
+    todoText: {
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        padding: 4,
+        borderRadius: 5,
+        maxWidth: 210,
+        color: '#000',
+        textDecorationLine: 'none',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    completeButton: {
+        padding: 10,
+    },
+    completedText: {
+        textDecorationLine: 'line-through',
+        fontSize: 16,
+        color: 'rgba(0, 0, 0, 0.2)',
+    },
     deleteButton: {
         padding: 10,
-        backgroundColor: 'red',
     },
     updateButton: {
-        backgroundColor: 'green',
         padding: 10,
     },
+
 });
